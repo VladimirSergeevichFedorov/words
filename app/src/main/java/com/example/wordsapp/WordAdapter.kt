@@ -16,6 +16,8 @@
 package com.example.wordsapp
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -34,19 +36,19 @@ class WordAdapter(private val letterId: String, context: Context) :
     private val filteredWords: List<String>
 
     init {
-        // Retrieve the list of words from res/values/arrays.xml
+        // Получаем список слов из res / values ​​/ arrays.xml
         val words = context.resources.getStringArray(R.array.words).toList()
 
         filteredWords = words
-            // Returns items in a collection if the conditional clause is true,
-            // in this case if an item starts with the given letter,
-            // ignoring UPPERCASE or lowercase.
+            // Возвращает элементы в коллекции, если условное предложение истинно,
+            // в этом случае, если элемент начинается с данной буквы,
+            // игнорирование ВЕРХНЕГО или строчного регистра
             .filter { it.startsWith(letterId, ignoreCase = true) }
-            // Returns a collection that it has shuffled in place
+            // Возвращает перетасованную коллекцию
             .shuffled()
-            // Returns the first n items as a [List]
+            // Возвращает первые n элементов как [List]
             .take(5)
-            // Returns a sorted version of that [List]
+// Возвращает отсортированную версию этого  [List]
             .sorted()
     }
 
@@ -64,7 +66,7 @@ class WordAdapter(private val letterId: String, context: Context) :
             .from(parent.context)
             .inflate(R.layout.item_view, parent, false)
 
-        // Setup custom accessibility delegate to set the text read
+        // Настраиваем настраиваемый делегат доступности для чтения текста
         layout.accessibilityDelegate = Accessibility
 
         return WordViewHolder(layout)
@@ -82,9 +84,15 @@ class WordAdapter(private val letterId: String, context: Context) :
         // Set the text of the WordViewHolder
         holder.button.text = item
 
+        holder.button.setOnClickListener {
+            val queryUrl: Uri = Uri.parse("${WordListFragment.SEARCH_PREFIX}${item}")
+            val intent = Intent(Intent.ACTION_VIEW, queryUrl)
+            context.startActivity(intent)
+        }
+
     }
-    // Setup custom accessibility delegate to set the text read with
-    // an accessibility service
+    // Настраиваем настраиваемый делегат доступности, чтобы установить текст, читаемый с помощью
+    // служба доступности
     companion object Accessibility : View.AccessibilityDelegate() {
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         override fun onInitializeAccessibilityNodeInfo(
@@ -92,10 +100,10 @@ class WordAdapter(private val letterId: String, context: Context) :
             info: AccessibilityNodeInfo?
         ) {
             super.onInitializeAccessibilityNodeInfo(host, info)
-            // With `null` as the second argument to [AccessibilityAction], the
-            // accessibility service announces "double tap to activate".
-            // If a custom string is provided,
-            // it announces "double tap to <custom string>".
+            // Если вторым аргументом [AccessibilityAction] будет `null`,
+            // служба доступности объявляет «двойное касание для активации».
+            // Если указана настраиваемая строка,
+            // объявляет «двойное нажатие на <настраиваемую строку>».
             val customString = host?.context?.getString(R.string.look_up_word)
             val customClick =
                 AccessibilityNodeInfo.AccessibilityAction(
